@@ -23,12 +23,39 @@ const server =
 
 const io =
     new Server(server, {
+
         cors: {
-            origin: "http://localhost:5173"
+
+            origin: [
+
+                "http://localhost:5173",
+
+                "https://net-watch-two.vercel.app"
+
+            ],
+
+            methods: [
+                "GET",
+                "POST"
+            ]
+
         }
+
     });
 
-app.use(cors());
+app.use(
+    cors({
+
+        origin: [
+
+            "http://localhost:5173",
+
+            "https://net-watch-two.vercel.app"
+
+        ]
+
+    })
+);
 app.use(express.json());
 
 app.use(
