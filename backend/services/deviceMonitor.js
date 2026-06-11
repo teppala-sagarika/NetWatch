@@ -1,19 +1,51 @@
-const ping = require("ping");
+const axios = require("axios");
 
 async function checkHost(host) {
 
-    const result =
-        await ping.promise.probe(host);
+    try {
 
-    return {
-        status: result.alive ?
-            "Online" :
-            "Offline",
+        let url = host;
 
-        latency: result.time === "unknown" ?
-            0 :
-            Number(result.time)
-    };
+        if (!host.startsWith("http://") &&
+            !host.startsWith("https://")
+        ) {
+
+            url = `https://${host}`;
+
+        }
+
+        const start =
+            Date.now();
+
+        await axios.get(
+            url, {
+                timeout: 5000
+            }
+        );
+
+        const latency =
+            Date.now() - start;
+
+        return {
+
+            status: "Online",
+
+            latency
+
+        };
+
+    } catch {
+
+        return {
+
+            status: "Offline",
+
+            latency: 0
+
+        };
+
+    }
+
 }
 
 module.exports = checkHost;
