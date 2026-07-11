@@ -12,6 +12,9 @@ const deviceRoutes =
     require("./routes/devices");
 require("dotenv").config();
 
+console.log("JWT_SECRET exists:", !!process.env.JWT_SECRET);
+console.log("MONGO_URI exists:", !!process.env.MONGO_URI);
+
 const getSystemMetrics =
     require("./services/monitor");
 
