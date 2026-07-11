@@ -1,6 +1,6 @@
 # 🚀 NetWatch
 
-A full-stack Network Monitoring Dashboard that helps track device availability, latency, alerts, and network health from a centralized interface.
+A full-stack Real-Time Service & Website Monitoring Platform that helps track device availability, latency, alerts, and network health from a centralized interface.
 
 ## 🌐 Live Demo
 
