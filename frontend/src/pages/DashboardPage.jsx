@@ -6,14 +6,19 @@ import Sidebar from "../components/Sidebar";
 import Dashboard from "../components/Dashboard";
 import HealthScore from "../components/HealthScore";
 import SummaryCards
-from "../components/SummaryCards";
+  from "../components/SummaryCards";
+import DeviceTable from "../components/DeviceTable";
+import Alerts from "../components/Alerts";
+
+import socket
+  from "../services/socket";
 function DashboardPage() {
 
   const [devices, setDevices] =
     useState([]);
-    const [alerts,
-setAlerts] =
-useState([]);
+  const [alerts,
+    setAlerts] =
+    useState([]);
 
   const loadDevices = async () => {
 
@@ -23,38 +28,62 @@ useState([]);
     setDevices(res.data);
   };
   const loadAlerts =
-async () => {
+    async () => {
 
-  const res =
-  await API.get(
-    "/alerts"
-  );
+      const res =
+        await API.get(
+          "/alerts"
+        );
 
-  setAlerts(
-    res.data
-  );
+      setAlerts(
+        res.data
+      );
 
-};
+    };
 
-useEffect(() => {
+  useEffect(() => {
 
-  loadDevices();
+    loadDevices();
 
-  loadAlerts();
+    loadAlerts();
 
-  const interval =
-    setInterval(() => {
+    socket.on(
+      "deviceUpdated",
+      (devices) => {
 
-      loadDevices();
+        console.log("Received from socket:", devices);
 
-      loadAlerts();
+        setDevices(devices);
 
-    }, 5000);
+      }
+    );
+    socket.on(
 
-  return () =>
-    clearInterval(interval);
+    "alertsUpdated",
 
-}, []);
+    (alerts)=>{
+
+        setAlerts(alerts);
+
+    }
+
+);
+
+    return () => {
+
+      socket.off(
+
+        "deviceUpdated"
+
+      );
+
+      socket.off(
+    "alertsUpdated"
+);
+
+    };
+
+  }, []);
 
   return (
 
@@ -65,16 +94,24 @@ useEffect(() => {
       <div className="main-content">
 
         <h1>Dashboard</h1>
+
         <SummaryCards
-  devices={devices}
-  alerts={alerts}
-/>
+          devices={devices}
+          alerts={alerts}
+        />
 
         <HealthScore
           devices={devices}
         />
 
+        <DeviceTable
+          devices={devices}
+          refresh={loadDevices}
+        />
+
         <Dashboard />
+
+        <Alerts />
 
       </div>
 

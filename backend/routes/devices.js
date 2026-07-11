@@ -13,6 +13,9 @@ const MonitorLog =
 const Alert =
     require("../models/Alert");
 
+const auth =
+    require("../middleware/auth");
+
 router.get("/", async(req, res) => {
 
     try {
@@ -23,107 +26,56 @@ router.get("/", async(req, res) => {
         const results =
             await Promise.all(
 
-                devices.map(
-                    async(device) => {
+                devices.map(async(device) => {
 
-                        const pingData =
-                            await checkHost(
-                                device.host
-                            );
-                        console.log(
-                            device.name,
-                            pingData
-                        );
+                    const latestLog =
+                        await MonitorLog.findOne({
 
-                        await MonitorLog.create({
+                            deviceId: device._id
 
-                            deviceId: device._id,
+                        })
+                        .sort({
 
-                            latency: pingData.latency,
-
-                            status: pingData.status
+                            timestamp: -1
 
                         });
-                        if (pingData.status === "Offline") {
 
-                            const existingAlert =
-                                await Alert.findOne({
+                    return {
 
-                                    deviceId: device._id,
+                        _id: device._id,
 
-                                    type: "OFFLINE"
+                        name: device.name,
 
-                                });
+                        host: device.host,
 
-                            if (!existingAlert) {
+                        status: latestLog ?
+                            latestLog.status :
+                            "Unknown",
 
-                                await Alert.create({
+                        latency: latestLog ?
+                            latestLog.latency :
+                            0
 
-                                    deviceId: device._id,
+                    };
 
-                                    deviceName: device.name,
-
-                                    type: "OFFLINE",
-
-                                    message: `${device.name} is offline`
-
-                                });
-
-                            }
-
-                        }
-                        if (pingData.status === "Online") {
-
-                            await Alert.deleteMany({
-
-                                deviceId: device._id,
-
-                                type: "OFFLINE"
-
-                            });
-
-                        }
-
-                        if (
-                            pingData.latency > 100
-                        ) {
-
-                            await Alert.create({
-
-                                deviceId: device._id,
-
-                                deviceName: device.name,
-
-                                type: "HIGH_LATENCY",
-
-                                message: `${device.name} latency is ${pingData.latency}ms`
-
-                            });
-
-                        }
-                        console.log(
-                            "Saved log for:",
-                            device.name
-                        );
-
-                        return {
-                            _id: device._id,
-                            name: device.name,
-                            host: device.host,
-                            ...pingData
-                        };
-
-                    }
-                )
+                })
 
             );
+
         res.json(results);
+
     } catch (error) {
+
         res.status(500).json({
+
             error: error.message
+
         });
+
     }
+
 });
+
 router.post("/", async(req, res) => {
 
     try {
@@ -132,8 +84,11 @@ router.post("/", async(req, res) => {
 
         const device =
             await Device.create({
+
                 name,
+
                 host
+
             });
 
         res.json(device);

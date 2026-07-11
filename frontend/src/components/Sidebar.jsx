@@ -4,11 +4,45 @@ import {
   FaBell,
   FaNetworkWired
 } from "react-icons/fa";
+import {
+    useNavigate
+}
+from "react-router-dom";
 import { Link } from "react-router-dom";
 function Sidebar() {
+  const navigate =
+useNavigate();
+const user = JSON.parse(
+    localStorage.getItem("user")
+);
+const logout = () => {
 
+    localStorage.clear();
+
+    navigate("/login");
+
+};
  return (
   <div className="sidebar">
+    <div
+    style={{
+        marginBottom: "25px"
+    }}
+>
+
+    <h3>
+
+        Welcome,
+
+    </h3>
+
+    <p>
+
+        {user?.name}
+
+    </p>
+
+</div>
 
     <h2>NetWatch</h2>
 
@@ -22,6 +56,13 @@ function Sidebar() {
           <FaChartLine />
           Dashboard
         </Link>
+        <button
+onClick={logout}
+>
+
+Logout
+
+</button>
       </li>
 
       <li>
@@ -32,6 +73,13 @@ function Sidebar() {
           <FaNetworkWired />
           Devices
         </Link>
+        <button
+onClick={logout}
+>
+
+Logout
+
+</button>
       </li>
 
       <li>
@@ -42,6 +90,13 @@ function Sidebar() {
           <FaBell />
           Alerts
         </Link>
+        <button
+onClick={logout}
+>
+
+Logout
+
+</button>
       </li>
 
       <li>
@@ -52,6 +107,13 @@ function Sidebar() {
           <FaServer />
           Analytics
         </Link>
+        <button
+onClick={logout}
+>
+
+Logout
+
+</button>
       </li>
 
     </ul>

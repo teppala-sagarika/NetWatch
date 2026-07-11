@@ -61,6 +61,17 @@ function Dashboard() {
 
   return (
     <>
+
+      <div className="section-header">
+
+        <h2>Backend Health</h2>
+
+        <p className="section-description">
+          These metrics show the health of the Render-hosted backend responsible for monitoring your services. Website response times and availability are measured independently of these server metrics.
+        </p>
+
+      </div>
+
       <div className="cards">
 
         <MetricCard
@@ -80,9 +91,7 @@ function Dashboard() {
 
         <MetricCard
           title="Uptime"
-          value={`${Math.floor(
-            metrics.uptime / 3600
-          )} hrs`}
+          value={`${Math.floor(metrics.uptime / 3600)} hrs`}
         />
 
       </div>
@@ -92,7 +101,7 @@ function Dashboard() {
       />
 
     </>
-  );
+);
 }
 
 export default Dashboard;

@@ -3,6 +3,8 @@ const mongoose = require("mongoose");
 const cors = require("cors");
 const http = require("http");
 const { Server } = require("socket.io");
+const authRoutes =
+    require("./routes/auth");
 const metricsRoute =
     require("./routes/metrics");
 
@@ -15,6 +17,9 @@ const getSystemMetrics =
 
 const alertRoutes =
     require("./routes/alerts");
+
+const monitorDevices =
+    require("./services/monitorDevices");
 
 const app = express();
 
@@ -72,12 +77,46 @@ app.use(
     "/api/alerts",
     alertRoutes
 );
+app.use(
+    "/api/auth",
+    authRoutes
+);
 
 mongoose
     .connect(process.env.MONGO_URI)
-    .then(() =>
-        console.log("Mongo Connected")
-    );
+    .then(() => {
+
+        console.log("Mongo Connected");
+
+        let monitoring = false;
+
+        async function runMonitoring() {
+
+            if (monitoring) return;
+
+            monitoring = true;
+
+            try {
+
+                await monitorDevices(io);
+
+            } catch (err) {
+
+                console.error("Monitoring Error:", err);
+
+            } finally {
+
+                monitoring = false;
+
+            }
+
+        }
+
+        runMonitoring();
+
+        setInterval(runMonitoring, 10000);
+
+    });
 
 io.on("connection", socket => {
 

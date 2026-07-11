@@ -59,7 +59,7 @@ function Alerts() {
           </p>
         )
         : (
-          alerts.map(
+          alerts.slice(0,5).map(
             alert => (
 
               <div
