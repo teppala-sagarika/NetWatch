@@ -1,150 +1,146 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import API from "../services/api";
 
-function Register() {
+function Register({ switchToLogin }) {
+  const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
+  const [form, setForm] = useState({
+    name: "",
+    email: "",
+    password: ""
+  });
 
-    const navigate = useNavigate();
-
-    const [form, setForm] = useState({
-
-        name: "",
-
-        email: "",
-
-        password: ""
-
+  const change = (e) => {
+    setForm({
+      ...form,
+      [e.target.name]: e.target.value
     });
+  };
 
-    const change = (e) => {
+  const register = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      const res = await API.post("/auth/register", form);
+      localStorage.setItem("token", res.data.token);
+      localStorage.setItem("user", JSON.stringify(res.data.user));
+      navigate("/dashboard");
+    } catch (err) {
+      alert(err.response?.data?.message || "Registration Failed");
+    } finally {
+      setLoading(false);
+    }
+  };
 
-        setForm({
+  const inputStyle = {
+    width: "100%",
+    backgroundColor: "#020617",
+    border: "1px solid #1e293b",
+    borderRadius: "10px",
+    padding: "10px 14px",
+    fontSize: "14px",
+    color: "#fff",
+    outline: "none",
+    boxSizing: "border-box",
+    transition: "border-color 0.2s ease"
+  };
 
-            ...form,
+  const labelStyle = {
+    display: "block",
+    fontSize: "11px",
+    fontFamily: "monospace",
+    textTransform: "uppercase",
+    letterSpacing: "0.05em",
+    color: "#64748b",
+    marginBottom: "6px"
+  };
 
-            [e.target.name]:
-            e.target.value
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: "20px", width: "100%" }}>
+      <div>
+        <h3 style={{ fontSize: "18px", fontWeight: "700", color: "#fff", margin: "0 0 4px 0" }}>Create Engine Profile</h3>
+        <p style={{ fontSize: "12px", color: "#94a3b8", margin: 0 }}>
+          NetWatch • Real-Time Monitoring Console
+        </p>
+      </div>
 
-        });
-
-    };
-
-    const register = async (e) => {
-
-        e.preventDefault();
-
-        try {
-
-            const res = await API.post(
-
-                "/auth/register",
-
-                form
-
-            );
-
-            localStorage.setItem(
-
-                "token",
-
-                res.data.token
-
-            );
-
-            localStorage.setItem(
-
-                "user",
-
-                JSON.stringify(
-                    res.data.user
-                )
-
-            );
-
-            navigate("/");
-
-        }
-
-        catch (err) {
-
-            alert(
-
-                err.response?.data?.message ||
-
-                "Registration Failed"
-
-            );
-
-        }
-
-    };
-
-    return (
-
-        <div className="auth-container">
-
-            <h1>NetWatch</h1>
-
-            <form onSubmit={register}>
-
-                <input
-
-                    name="name"
-
-                    placeholder="Name"
-
-                    onChange={change}
-
-                />
-
-                <input
-
-                    name="email"
-
-                    type="email"
-
-                    placeholder="Email"
-
-                    onChange={change}
-
-                />
-
-                <input
-
-                    name="password"
-
-                    type="password"
-
-                    placeholder="Password"
-
-                    onChange={change}
-
-                />
-
-                <button>
-
-                    Register
-
-                </button>
-
-            </form>
-
-            <p>
-
-                Already have an account?
-
-                <Link to="/login">
-
-                    Login
-
-                </Link>
-
-            </p>
-
+      <form onSubmit={register} style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+        <div>
+          <label style={labelStyle}>Developer Name</label>
+          <input
+            name="name"
+            type="text"
+            placeholder="Alex Mercer"
+            onChange={change}
+            style={inputStyle}
+            onFocus={(e) => e.target.style.borderColor = "#06b6d4"}
+            onBlur={(e) => e.target.style.borderColor = "#1e293b"}
+            required
+          />
         </div>
 
-    );
+        <div>
+          <label style={labelStyle}>Security Email</label>
+          <input
+            name="email"
+            type="email"
+            placeholder="name@company.com"
+            onChange={change}
+            style={inputStyle}
+            onFocus={(e) => e.target.style.borderColor = "#06b6d4"}
+            onBlur={(e) => e.target.style.borderColor = "#1e293b"}
+            required
+          />
+        </div>
 
+        <div>
+          <label style={labelStyle}>Access Password</label>
+          <input
+            name="password"
+            type="password"
+            placeholder="••••••••"
+            onChange={change}
+            style={inputStyle}
+            onFocus={(e) => e.target.style.borderColor = "#06b6d4"}
+            onBlur={(e) => e.target.style.borderColor = "#1e293b"}
+            required
+          />
+        </div>
+
+        <button 
+          disabled={loading}
+          style={{
+            width: "100%",
+            marginTop: "8px",
+            padding: "12px",
+            borderRadius: "10px",
+            background: "linear-gradient(to right, #06b6d4, #2563eb)",
+            color: "#fff",
+            fontWeight: "600",
+            fontSize: "14px",
+            border: "none",
+            cursor: loading ? "not-allowed" : "pointer",
+            boxShadow: "0 4px 12px rgba(6, 182, 212, 0.15)",
+            opacity: loading ? 0.7 : 1
+          }}
+        >
+          {loading ? "Provisioning Environment..." : "Deploy Active Credentials"}
+        </button>
+      </form>
+
+      <p style={{ fontSize: "13px", color: "#64748b", textAlign: "center", margin: "4px 0 0 0" }}>
+        Already configured?{" "}
+        <button 
+          type="button"
+          onClick={switchToLogin} 
+          style={{ background: "none", border: "none", color: "#22d3ee", padding: 0, cursor: "pointer", fontSize: "13px", fontWeight: "600" }}
+        >
+          Sign In
+        </button>
+      </p>
+    </div>
+  );
 }
 
 export default Register;
