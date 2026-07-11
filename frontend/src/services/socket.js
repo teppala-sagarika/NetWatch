@@ -1,24 +1,29 @@
 import { io } from "socket.io-client";
 
-const socket = io(
-    import.meta.env.VITE_API_URL.replace("/api", "")
-);
+const token =
+    localStorage.getItem("token");
 
-socket.on("connect", () => {
+const socket =
+    io(
 
-    console.log(
-        "Socket Connected:",
-        socket.id
+        import.meta.env.VITE_API_URL.replace(
+
+            "/api",
+
+            ""
+
+        ),
+
+        {
+
+            auth: {
+
+                token
+
+            }
+
+        }
+
     );
-
-});
-
-socket.on("disconnect", () => {
-
-    console.log(
-        "Socket Disconnected"
-    );
-
-});
 
 export default socket;

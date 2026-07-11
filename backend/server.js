@@ -26,6 +26,8 @@ const app = express();
 const server =
     http.createServer(app);
 
+const jwt = require("jsonwebtoken");
+
 const io =
     new Server(server, {
 
@@ -118,11 +120,66 @@ mongoose
 
     });
 
+io.use((socket, next) => {
+
+    try {
+
+        const token =
+            socket.handshake.auth.token;
+
+        if (!token) {
+
+            return next(
+                new Error("Authentication Error")
+            );
+
+        }
+
+        const decoded =
+            jwt.verify(
+
+                token,
+
+                process.env.JWT_SECRET
+
+            );
+
+        socket.userId =
+            decoded.id;
+
+        next();
+
+    } catch (err) {
+
+        next(
+            new Error("Authentication Error")
+        );
+
+    }
+
+});
+
+
+
 io.on("connection", socket => {
 
     console.log(
-        "Client Connected"
+
+        "Socket Connected:",
+
+        socket.userId
+
     );
+
+
+
+    socket.join(
+
+        socket.userId
+
+    );
+
+
 
     const interval =
         setInterval(async() => {
@@ -131,23 +188,35 @@ io.on("connection", socket => {
                 await getSystemMetrics();
 
             socket.emit(
+
                 "metrics",
+
                 metrics
+
             );
 
         }, 3000);
 
+
+
     socket.on(
+
         "disconnect",
+
         () => {
 
             clearInterval(interval);
 
             console.log(
-                "Client Disconnected"
+
+                "Socket Disconnected:",
+
+                socket.userId
+
             );
 
         }
+
     );
 
 });

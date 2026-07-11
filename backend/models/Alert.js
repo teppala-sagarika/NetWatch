@@ -3,20 +3,56 @@ const mongoose = require("mongoose");
 const alertSchema =
     new mongoose.Schema({
 
-        deviceId: {
+        userId: {
+
             type: mongoose.Schema.Types.ObjectId,
-            ref: "Device"
+
+            ref: "User",
+
+            required: true
+
         },
 
-        deviceName: String,
+        deviceId: {
 
-        type: String,
+            type: mongoose.Schema.Types.ObjectId,
 
-        message: String,
+            ref: "Device",
+
+            required: true
+
+        },
+
+        deviceName: {
+
+            type: String,
+
+            required: true
+
+        },
+
+        type: {
+
+            type: String,
+
+            required: true
+
+        },
+
+        message: {
+
+            type: String,
+
+            required: true
+
+        },
 
         createdAt: {
+
             type: Date,
+
             default: Date.now
+
         }
 
     });

@@ -1,104 +1,112 @@
-function HealthScore({
-  devices
-}) {
+function HealthScore({ devices }) {
 
-  let score = 100;
+  const total = devices.length;
 
-  let online = 0;
+  const online =
+    devices.filter(
+      device => device.status === "Online"
+    ).length;
 
-  let offline = 0;
+  const offline =
+    devices.filter(
+      device =>
+        device.status === "Offline"
+    ).length;
 
-  let totalLatency = 0;
+  const serverError =
+    devices.filter(
+      device =>
+        device.status === "Server Error"
+    ).length;
 
-  devices.forEach(device => {
+  const totalLatency =
+    devices.reduce(
 
-    if (
-      device.status ===
-      "Offline"
-    ) {
-      score -= 20;
-      offline++;
-    } else {
-      online++;
-    }
+      (sum, device) =>
 
-    if (
-      device.latency > 100
-    ) {
-      score -= 10;
-    }
+        sum + (device.latency || 0),
 
-    totalLatency +=
-      device.latency || 0;
-  });
+      0
 
-  score =
-    Math.max(score, 0);
+    );
 
   const avgLatency =
-    devices.length
+    total
       ? Math.round(
-          totalLatency /
-          devices.length
+          totalLatency / total
         )
       : 0;
+
+  const score =
+    total
+      ? Math.round(
+          (online / total) * 100
+        )
+      : 100;
 
   let status =
     "Excellent";
 
-  if (score < 90)
+  if (score < 100)
     status = "Warning";
 
   if (score < 70)
     status = "Critical";
 
-const color =
-  score >= 90
-    ? "#22c55e"
-    : score >= 70
-    ? "#f59e0b"
-    : "#ef4444";
+  const color =
+    score === 100
+      ? "#22c55e"
+      : score >= 70
+      ? "#f59e0b"
+      : "#ef4444";
 
   return (
+
     <div className="health-card">
 
       <h2>
-        Network Health
+        Service Health
       </h2>
 
       <h1
-  style={{
-    color: color
-  }}
->
-  {score}%
-</h1>
+        style={{
+          color
+        }}
+      >
+        {score}%
+      </h1>
 
-      <p>
-        {status}
-      </p>
+      <p>{status}</p>
 
       <div className="stats">
 
         <div>
+
           Online:
           {online}
+
         </div>
 
         <div>
+
           Offline:
           {offline}
+
         </div>
 
         <div>
+
           Avg:
-          {avgLatency}ms
+          {avgLatency} ms
+
         </div>
 
       </div>
 
     </div>
+
   );
+
 }
 
 export default HealthScore;

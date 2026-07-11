@@ -3,18 +3,48 @@ const mongoose = require("mongoose");
 const monitorLogSchema =
     new mongoose.Schema({
 
-        deviceId: {
+        userId: {
+
             type: mongoose.Schema.Types.ObjectId,
-            ref: "Device"
+
+            ref: "User",
+
+            required: true
+
         },
 
-        latency: Number,
+        deviceId: {
 
-        status: String,
+            type: mongoose.Schema.Types.ObjectId,
+
+            ref: "Device",
+
+            required: true
+
+        },
+
+        latency: {
+
+            type: Number,
+
+            required: true
+
+        },
+
+        status: {
+
+            type: String,
+
+            required: true
+
+        },
 
         timestamp: {
+
             type: Date,
+
             default: Date.now
+
         }
 
     });

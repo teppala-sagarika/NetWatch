@@ -5,61 +5,50 @@ const MonitorLog = require("../models/MonitorLog");
 const Alert = require("../models/Alert");
 
 async function monitorDevices(io) {
+
     try {
-        const devices = await Device.find();
 
-        const results = await Promise.all(
+        const devices =
+            await Device.find();
 
-            devices.map(async(device) => {
+        const userResults = {};
 
-                const pingData =
-                    await checkHost(device.host);
+        for (const device of devices) {
 
-                console.log(
-                    device.name,
-                    pingData
-                );
+            const pingData =
+                await checkHost(device.host);
 
-                await MonitorLog.create({
+            console.log(
+                device.name,
+                pingData
+            );
 
-                    deviceId: device._id,
+            // ==========================
+            // Save Monitor Log
+            // ==========================
 
-                    latency: pingData.latency,
+            await MonitorLog.create({
 
-                    status: pingData.status
+                userId: device.userId,
 
-                });
+                deviceId: device._id,
 
-                if (pingData.status === "Offline") {
+                latency: pingData.latency,
 
-                    const existingAlert =
-                        await Alert.findOne({
+                status: pingData.status
 
-                            deviceId: device._id,
+            });
 
-                            type: "OFFLINE"
+            // ==========================
+            // OFFLINE ALERT
+            // ==========================
 
-                        });
+            if (pingData.status === "Offline") {
 
-                    if (!existingAlert) {
+                const existing =
+                    await Alert.findOne({
 
-                        await Alert.create({
-
-                            deviceId: device._id,
-
-                            deviceName: device.name,
-
-                            type: "OFFLINE",
-
-                            message: `${device.name} is offline`
-
-                        });
-
-                    }
-
-                } else {
-
-                    await Alert.deleteMany({
+                        userId: device.userId,
 
                         deviceId: device._id,
 
@@ -67,11 +56,60 @@ async function monitorDevices(io) {
 
                     });
 
-                }
-
-                if (pingData.latency > 300) {
+                if (!existing) {
 
                     await Alert.create({
+
+                        userId: device.userId,
+
+                        deviceId: device._id,
+
+                        deviceName: device.name,
+
+                        type: "OFFLINE",
+
+                        message: `${device.name} is offline`
+
+                    });
+
+                }
+
+            } else {
+
+                await Alert.deleteMany({
+
+                    userId: device.userId,
+
+                    deviceId: device._id,
+
+                    type: "OFFLINE"
+
+                });
+
+            }
+
+            // ==========================
+            // HIGH LATENCY ALERT
+            // ==========================
+
+            if (pingData.latency > 300) {
+
+                const existing =
+                    await Alert.findOne({
+
+                        userId: device.userId,
+
+                        deviceId: device._id,
+
+                        type: "HIGH_LATENCY"
+
+                    });
+
+                if (!existing) {
+
+                    await Alert.create({
+
+                        userId: device.userId,
 
                         deviceId: device._id,
 
@@ -85,45 +123,99 @@ async function monitorDevices(io) {
 
                 }
 
-                return {
+            } else {
 
-                    _id: device._id,
+                await Alert.deleteMany({
 
-                    name: device.name,
+                    userId: device.userId,
 
-                    host: device.host,
+                    deviceId: device._id,
 
-                    status: pingData.status,
+                    type: "HIGH_LATENCY"
 
-                    latency: pingData.latency
+                });
 
-                };
+            }
 
-            })
+            // ==========================
+            // Group Devices by User
+            // ==========================
 
-        );
-        console.log("Emitting deviceUpdated");
-        console.log(results);
-        io.emit(
+            const uid =
+                device.userId.toString();
 
-            "deviceUpdated",
+            if (!userResults[uid]) {
 
-            results
+                userResults[uid] = [];
 
-        );
-        const alerts =
-            await Alert.find()
-            .sort({
-                createdAt: -1
+            }
+
+            userResults[uid].push({
+
+                _id: device._id,
+
+                name: device.name,
+
+                host: device.host,
+
+                status: pingData.status,
+
+                latency: pingData.latency
+
             });
 
-        io.emit(
-            "alertsUpdated",
-            alerts
-        );
+        }
+
+        // ==========================
+        // Emit ONLY that user's devices
+        // ==========================
+
+        for (const userId in userResults) {
+
+            io.to(userId).emit(
+
+                "deviceUpdated",
+
+                userResults[userId]
+
+            );
+
+            const alerts =
+                await Alert.find({
+
+                    userId
+
+                })
+
+            .sort({
+
+                createdAt: -1
+
+            });
+
+            io.to(userId).emit(
+
+                "alertsUpdated",
+
+                alerts
+
+            );
+
+        }
+
     } catch (err) {
-        console.error("monitorDevices:", err);
+
+        console.error(
+
+            "monitorDevices:",
+
+            err
+
+        );
+
     }
+
 }
 
-module.exports = monitorDevices;
+module.exports =
+    monitorDevices;

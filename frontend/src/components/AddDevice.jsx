@@ -9,29 +9,60 @@ function AddDevice({ refresh }) {
   const [host, setHost] =
     useState("");
 
+  const [error, setError] =
+    useState("");
+
+  const [loading, setLoading] =
+    useState(false);
+
   const handleSubmit =
     async (e) => {
 
       e.preventDefault();
 
+      setError("");
+
+      setLoading(true);
+
       try {
 
         await API.post(
+
           "/devices",
+
           {
+
             name,
+
             host
+
           }
+
         );
 
         setName("");
+
         setHost("");
 
         refresh();
 
-      } catch (error) {
+      }
 
-        console.log(error);
+      catch (err) {
+
+        setError(
+
+          err.response?.data?.message ||
+
+          "Unable to add service."
+
+        );
+
+      }
+
+      finally {
+
+        setLoading(false);
 
       }
 
@@ -45,25 +76,76 @@ function AddDevice({ refresh }) {
     >
 
       <input
+
         type="text"
-        placeholder="Device Name"
+
+        placeholder="Service Name"
+
         value={name}
+
         onChange={(e) =>
+
           setName(e.target.value)
+
         }
+
+        required
+
       />
 
       <input
+
         type="text"
-        placeholder="Host/IP"
+
+        placeholder="Website URL (e.g. google.com)"
+
         value={host}
+
         onChange={(e) =>
+
           setHost(e.target.value)
+
         }
+
+        required
+
       />
 
-      <button type="submit">
-        Add Device
+      {
+
+        error &&
+
+        <p
+          style={{
+            color: "#ef4444",
+            margin: "8px 0"
+          }}
+        >
+
+          {error}
+
+        </p>
+
+      }
+
+      <button
+
+        type="submit"
+
+        disabled={loading}
+
+      >
+
+        {
+
+          loading
+
+            ? "Adding..."
+
+            : "Add Service"
+
+        }
+
       </button>
 
     </form>
