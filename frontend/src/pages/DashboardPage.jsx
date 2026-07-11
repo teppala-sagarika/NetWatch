@@ -95,15 +95,14 @@ function DashboardPage() {
 
         <h1>Dashboard</h1>
 
-        <SummaryCards
-          devices={devices}
-          alerts={alerts}
-        />
+        {/* Add a wrapper container with margin-bottom to create space below them */}
+<div style={{ marginBottom: "32px" }}>
+  <SummaryCards devices={devices} alerts={alerts} />
+</div>
 
-        <HealthScore
-          devices={devices}
-        />
-
+<div style={{ marginBottom: "40px" }}>
+  <HealthScore devices={devices} />
+</div>
         <DeviceTable
           devices={devices}
           refresh={loadDevices}
