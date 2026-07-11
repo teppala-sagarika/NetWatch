@@ -16,11 +16,8 @@ const user = JSON.parse(
     localStorage.getItem("user")
 );
 const logout = () => {
-
     localStorage.clear();
-
-    navigate("/");
-
+    window.location.href = "/";
 };
  return (
   <div className="sidebar">

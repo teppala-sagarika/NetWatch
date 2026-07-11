@@ -109,7 +109,10 @@ function App() {
       />
 
       {/* Catch-all Wildcard Route to prevent dead terminal screens */}
-      <Route path="*" replace to={isAuthenticated ? "/dashboard" : "/"} />
+      <Route
+    path="*"
+    element={<Navigate to={isAuthenticated ? "/dashboard" : "/"} replace />}
+/>
     </Routes>
   );
 }
